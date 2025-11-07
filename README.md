@@ -79,7 +79,7 @@ Homepage-lite is available as a Docker image on GitHub Container Registry.
        ports:
          - "8888:8888"
        volumes:
-         - ./config.yaml:/root/config.yaml
+         - ./:/app/config/
        restart: unless-stopped
    ```
 

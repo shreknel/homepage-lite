@@ -1,8 +1,9 @@
 services:
   homepage-lite:
     image: ghcr.io/jkerdreux-imt/homepage-lite:latest
+    # image: homepage-lite:latest
     ports:
       - "8888:8888"
     volumes:
-      - ./config.yaml:/root/config.yaml
+      - ./:/app/config/
     restart: unless-stopped

@@ -18,17 +18,13 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+WORKDIR /app
 
 # Copy the binary from builder
 COPY --from=builder /app/homepage-lite .
-
-# Copy static files and templates
-COPY --from=builder /app/static ./static
-COPY --from=builder /app/templates ./templates
 
 # Expose port (default 8888 from README)
 EXPOSE 8888
 
 # Run the binary
-CMD ["./homepage-lite"]
+CMD ["./homepage-lite","--config","/app/config/config.yaml"]
