@@ -4,6 +4,8 @@ A lightweight, Go-powered homepage dashboard for managing and monitoring your ho
 
 [![Homepage-lite Screenshot](Screenshots/2025-11-07-113340_hyprshot.png)](GALLERY.md)
 
+See the [Gallery](GALLERY.md) for more screenshots.
+
 ## Features
 
 - **Service Monitoring**
