@@ -17,6 +17,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -208,32 +209,43 @@ func watchConfig() error {
 
 	fmt.Printf("Starting config file watcher for: %s\n", absPath)
 
-	var lastModTime time.Time
-
-	// Check file modification time initially
-	if info, err := os.Stat(absPath); err == nil {
-		lastModTime = info.ModTime()
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("error creating watcher: %v", err)
 	}
 
-	// Start periodic check
+	// Watch the directory to handle atomic writes (temp file + rename)
+	dir := filepath.Dir(absPath)
+	err = watcher.Add(dir)
+	if err != nil {
+		watcher.Close()
+		return fmt.Errorf("error watching directory: %v", err)
+	}
+
+	// Start watching in background
 	go func() {
-		ticker := time.NewTicker(2 * time.Second)
-		for range ticker.C {
-			info, err := os.Stat(absPath)
-			if err != nil {
-				fmt.Printf("Error checking config file: %v\n", err)
-				continue
-			}
-
-			if info.ModTime() != lastModTime {
-				fmt.Printf("Config file modified at %v\n", info.ModTime())
-				lastModTime = info.ModTime()
-
-				if err := loadConfig(); err != nil {
-					fmt.Printf("Error reloading config: %v\n", err)
-				} else {
-					fmt.Println("Config reloaded successfully")
+		defer watcher.Close()
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
 				}
+				// Check if the event is for our config file
+				if filepath.Base(event.Name) == filepath.Base(absPath) &&
+					event.Op&fsnotify.Write == fsnotify.Write {
+					fmt.Printf("Config file modified: %s\n", event.Name)
+					if err := loadConfig(); err != nil {
+						fmt.Printf("Error reloading config: %v\n", err)
+					} else {
+						fmt.Println("Config reloaded successfully")
+					}
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				fmt.Printf("Watcher error: %v\n", err)
 			}
 		}
 	}()
