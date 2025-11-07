@@ -90,7 +90,7 @@ bookmarks:
 settings:
   theme: default
   title: My Homelab
-  port: 8080
+  port: 8888
 
 # Configuration changes are detected automatically and trigger a page reload.
 ```
