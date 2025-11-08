@@ -1,6 +1,12 @@
 # Build stage
 FROM golang:1.25-alpine AS builder
 
+# Build args for version info
+ARG VERSION=dev
+ARG BUILD_TIME=unknown
+ARG GIT_COMMIT=unknown
+ARG GO_VERSION=unknown
+
 WORKDIR /app
 
 # Copy go mod files
@@ -10,8 +16,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o homepage-lite .
+# Build the binary with ldflags
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-s -w -X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME} -X main.GitCommit=${GIT_COMMIT} -X main.GoVersion=${GO_VERSION}" -o homepage-lite .
 
 # Runtime stage
 FROM alpine:latest
