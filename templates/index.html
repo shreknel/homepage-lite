@@ -18,29 +18,31 @@
 
     <main class="container">
         <div class="dashboard-layout layout-sidebar">
-            <aside class="sidebar">
-                <section>
-                    <h2>Bookmarks</h2>
-                    <div class="columns bookmarks-sidebar" id="bookmarks">
-                        {{range .Config.Bookmarks}}
-                        <div>
-                            <h2>{{.Group}}</h2>
-                            <div class='group-items bookmark-items'>
-                                {{range .Items}}
-                                <a href='{{.URL}}' target='_blank' class='card bookmark-card'>
-                                    <div class='card-content'>
-                                        <h3>{{.Abbr}}</h3>
-                                        <p class='bookmark-name'>{{.Name}}</p>
-                                        <p class='bookmark-url'>{{getDomain .URL}}</p>
-                                    </div>
-                                </a>
-                                {{end}}
-                            </div>
-                        </div>
-                        {{end}}
-                    </div>
-                </section>
-            </aside>
+             <aside class="sidebar">
+                 {{if .Config.Bookmarks}}
+                 <section>
+                     <h2>Bookmarks</h2>
+                     <div class="columns bookmarks-sidebar" id="bookmarks">
+                         {{range .Config.Bookmarks}}
+                         <div>
+                             <h2>{{.Group}}</h2>
+                             <div class='group-items bookmark-items'>
+                                 {{range .Items}}
+                                 <a href='{{.URL}}' target='_blank' class='card bookmark-card'>
+                                     <div class='card-content'>
+                                         <h3>{{.Abbr}}</h3>
+                                         <p class='bookmark-name'>{{.Name}}</p>
+                                         <p class='bookmark-url'>{{getDomain .URL}}</p>
+                                     </div>
+                                 </a>
+                                 {{end}}
+                             </div>
+                         </div>
+                         {{end}}
+                     </div>
+                 </section>
+                 {{end}}
+             </aside>
             
             <div class="main-content">
                 <section>
@@ -69,27 +71,29 @@
                     </div>
                 </section>
                 
-                <section class="bookmarks-bottom">
-                    <h2>Bookmarks</h2>
-                    <div class="columns" id="bookmarks-bottom">
-                        {{range .Config.Bookmarks}}
-                        <div>
-                            <h2>{{.Group}}</h2>
-                            <div class='group-items bookmark-items'>
-                                {{range .Items}}
-                                <a href='{{.URL}}' target='_blank' class='card bookmark-card'>
-                                    <div class='card-content'>
-                                        <h3>{{.Abbr}}</h3>
-                                        <p class='bookmark-name'>{{.Name}}</p>
-                                        <p class='bookmark-url'>{{getDomain .URL}}</p>
-                                    </div>
-                                </a>
-                                {{end}}
-                            </div>
-                        </div>
-                        {{end}}
-                    </div>
-                </section>
+                 {{if .Config.Bookmarks}}
+                 <section class="bookmarks-bottom">
+                     <h2>Bookmarks</h2>
+                     <div class="columns" id="bookmarks-bottom">
+                         {{range .Config.Bookmarks}}
+                         <div>
+                             <h2>{{.Group}}</h2>
+                             <div class='group-items bookmark-items'>
+                                 {{range .Items}}
+                                 <a href='{{.URL}}' target='_blank' class='card bookmark-card'>
+                                     <div class='card-content'>
+                                         <h3>{{.Abbr}}</h3>
+                                         <p class='bookmark-name'>{{.Name}}</p>
+                                         <p class='bookmark-url'>{{getDomain .URL}}</p>
+                                     </div>
+                                 </a>
+                                 {{end}}
+                             </div>
+                         </div>
+                         {{end}}
+                     </div>
+                 </section>
+                 {{end}}
             </div>
         </div>
     </main>
