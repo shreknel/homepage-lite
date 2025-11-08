@@ -43,9 +43,9 @@ function updateServiceCard(serviceId, status) {
 
 // Update metrics display
 function updateMetricsDisplay(metrics) {
-    document.getElementById('cpu-value').textContent = metrics.CPULoad.toFixed(2) + '%';
-    document.getElementById('memory-value').textContent = metrics.MemoryUsed.toFixed(2) + 'GB / ' + metrics.MemoryTotal.toFixed(2) + 'GB';
-    document.getElementById('disk-value').textContent = metrics.DiskUsed.toFixed(2) + 'GB / ' + metrics.DiskTotal.toFixed(2) + 'GB';
+    document.getElementById('cpu-value').textContent = metrics.CPULoad.toFixed(1) + '%';
+    document.getElementById('memory-value').textContent = metrics.MemoryUsed.toFixed(1) + 'GB / ' + metrics.MemoryTotal.toFixed(1) + 'GB';
+    document.getElementById('disk-value').textContent = metrics.DiskUsed.toFixed(1) + 'GB / ' + metrics.DiskTotal.toFixed(1) + 'GB';
 }
 
 // Search functionality

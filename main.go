@@ -43,13 +43,7 @@ var (
 	sseClientsMu sync.Mutex
 )
 
-// Metrics cache variables
-var (
-	metricsCache     SystemMetrics
-	metricsCacheTime time.Time
-	metricsCacheMux  sync.RWMutex
-	cacheTimeout     = 5 * time.Second
-)
+
 
 // Service status store (updated by background goroutine)
 var (
@@ -127,7 +121,6 @@ func loadTemplates() error {
 		"getIconHTML":  getIconHTML,
 		"getDomain":    getDomain,
 		"getServiceID": getServiceID,
-		"round2":       func(x float64) float64 { return float64(int(x*100)) / 100 },
 	}
 
 	if useEmbedFS() {
@@ -267,6 +260,17 @@ func handleSSE(w http.ResponseWriter, r *http.Request) {
 	sseClientsMu.Lock()
 	sseClients[messageChan] = true
 	sseClientsMu.Unlock()
+
+	// Send current metrics to the new client immediately
+	if metrics, err := collectSystemMetrics(); err == nil {
+		msg := SSEMessage{Type: SSETypeMetrics, Data: metrics}
+		jsonMsg, _ := json.Marshal(msg)
+		select {
+		case messageChan <- string(jsonMsg):
+		default:
+			// Client not ready, skip
+		}
+	}
 
 	// Clean up when the client disconnects
 	defer func() {
@@ -447,37 +451,7 @@ func collectSystemMetrics() (SystemMetrics, error) {
 	return metrics, nil
 }
 
-// getCachedMetrics returns system metrics using a 5-second cache to optimize
-// performance. The cache implementation is thread-safe using mutex locks.
-func getCachedMetrics() (SystemMetrics, error) {
-	metricsCacheMux.RLock()
-	if time.Since(metricsCacheTime) < cacheTimeout {
-		defer metricsCacheMux.RUnlock()
-		return metricsCache, nil
-	}
-	metricsCacheMux.RUnlock()
 
-	metricsCacheMux.Lock()
-	defer metricsCacheMux.Unlock()
-
-	// Double-check after acquiring lock
-	if time.Since(metricsCacheTime) < cacheTimeout {
-		return metricsCache, nil
-	}
-
-	metrics, err := collectSystemMetrics()
-	if err != nil {
-		return SystemMetrics{}, err
-	}
-
-	metricsCache = metrics
-	metricsCacheTime = time.Now()
-
-	// Broadcast metrics update via SSE
-	broadcastSSE("metrics", metrics)
-
-	return metrics, nil
-}
 
 // handleIndex serves the main index page with services, bookmarks, and metrics
 func handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -495,16 +469,11 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Get system metrics
-	metrics, _ := getCachedMetrics()
-
 	data := struct {
 		Config  Config
-		Metrics SystemMetrics
 		Version string
 	}{
 		Config:  config,
-		Metrics: metrics,
 		Version: Version,
 	}
 	configMutex.RUnlock()
