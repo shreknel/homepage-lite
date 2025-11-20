@@ -43,8 +43,6 @@ var (
 	sseClientsMu sync.Mutex
 )
 
-
-
 // Service status store (updated by background goroutine)
 var (
 	serviceStatus    = make(map[string]string)
@@ -302,7 +300,11 @@ func checkServiceStatus(url string) string {
 		Timeout:   5 * time.Second,
 	}
 
-	_, err := client.Head(url)
+	resp, err := client.Head(url)
+	// don't forget to close
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return "down"
 	}
@@ -330,22 +332,6 @@ func updateServiceStatusLoop() {
 
 	for range ticker.C {
 		updateAllServiceStatus()
-	}
-}
-
-// updateMetricsLoop runs in background and broadcasts metrics updates periodically
-func updateMetricsLoop() {
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
-
-	for range ticker.C {
-		metrics, err := collectSystemMetrics()
-		if err != nil {
-			continue
-		}
-
-		// Broadcast metrics update via SSE
-		broadcastSSE(SSETypeMetrics, metrics)
 	}
 }
 
@@ -388,6 +374,22 @@ func updateAllServiceStatus() {
 	// Update global status map in one go
 	serviceStatus = tempStatus
 	serviceStatusMux.Unlock()
+}
+
+// updateMetricsLoop runs in background and broadcasts metrics updates periodically
+func updateMetricsLoop() {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		metrics, err := collectSystemMetrics()
+		if err != nil {
+			continue
+		}
+
+		// Broadcast metrics update via SSE
+		broadcastSSE(SSETypeMetrics, metrics)
+	}
 }
 
 func getIconHTML(icon, name string) template.HTML {
@@ -450,8 +452,6 @@ func collectSystemMetrics() (SystemMetrics, error) {
 
 	return metrics, nil
 }
-
-
 
 // handleIndex serves the main index page with services, bookmarks, and metrics
 func handleIndex(w http.ResponseWriter, r *http.Request) {
