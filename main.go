@@ -177,7 +177,10 @@ func broadcastSSE(msgType SSEMessageType, data any) {
 		msg.Data = data
 	}
 
-	jsonMsg, _ := json.Marshal(msg)
+	jsonMsg, err := json.Marshal(msg)
+	if err != nil {
+		return
+	}
 	message := string(jsonMsg)
 
 	sseClientsMu.Lock()
