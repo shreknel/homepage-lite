@@ -486,7 +486,8 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 
 	err := templates.ExecuteTemplate(w, "index.html", data)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		// Use fmt.Printf instead of http.Error to avoid WriteHeader conflicts
+		fmt.Printf("Template execution error: %v\n", err)
 		return
 	}
 }
