@@ -400,11 +400,20 @@ func updateMetricsLoop() {
 
 func getIconHTML(icon, name string) template.HTML {
 	if icon == "" {
-		return template.HTML(fmt.Sprintf(`<span class="iconify" data-icon="mdi:application" data-width="36" data-height="36"></span>`))
+		return template.HTML(`<span class="iconify" data-icon="mdi:application" data-width="36" data-height="36"></span>`)
 	}
+
 	if strings.HasPrefix(icon, "mdi-") {
-		return template.HTML(fmt.Sprintf(`<span class="iconify" data-icon="mdi:%s" data-width="36" data-height="36"></span>`, strings.TrimPrefix(icon, "mdi-")))
+		return template.HTML(fmt.Sprintf(
+			`<span class="iconify" data-icon="mdi:%s" data-width="36" data-height="36"></span>`,
+			strings.TrimPrefix(icon, "mdi-"),
+		))
 	}
+
+	if strings.HasPrefix(icon, "http://") || strings.HasPrefix(icon, "https://") {
+		return template.HTML(fmt.Sprintf(`<img src='%s' alt='%s'>`, icon, name))
+	}
+
 	url := fmt.Sprintf("https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/%s", icon)
 	return template.HTML(fmt.Sprintf(`<img src='%s' alt='%s'>`, url, name))
 }
