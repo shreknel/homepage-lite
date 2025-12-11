@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.25-alpine AS builder
+FROM golang:1.25-alpine3.21 AS builder
 
 # Build args for version info
 ARG VERSION=dev
@@ -18,7 +18,7 @@ COPY . .
 RUN BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ') && GO_VERSION=$(go version | cut -d ' ' -f 3) && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-s -w -X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME} -X main.GitCommit=${GIT_COMMIT} -X main.GoVersion=${GO_VERSION}" -o homepage-lite .
 
 # Runtime stage
-FROM alpine:latest
+FROM alpine:3.21
 
 RUN apk --no-cache add ca-certificates
 
